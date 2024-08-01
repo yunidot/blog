@@ -1,6 +1,10 @@
 import { readFile, writeFile } from "fs/promises";
 import { Injectable } from "@nestjs/common";
 import { PostDto } from "./blog.model";
+import { Model } from "mongoose";
+import { Blog, BlogDocument } from "./blog.schema";
+import { InjectModel } from "@nestjs/mongoose";
+
 
 export interface BlogRepository {
     getAllPost(): Promise<PostDto[]>;
@@ -53,4 +57,40 @@ export class BlogFileRepository implements BlogRepository {
         await writeFile(this.FILE_NAME, JSON.stringify(posts));
     }
     
+}
+
+@Injectable()
+export class BlogMongoRepository implements BlogRepository {
+    constructor(@InjectModel(Blog.name) private blogModel: Model<BlogDocument>) {}
+
+    // 게시글 읽어오기
+    async getAllPost(): Promise<Blog[]> {
+        return await this.blogModel.find().exec();
+    }
+
+    //게시글 작성
+    async createPost(post: PostDto): Promise<void> {
+        const createPost = {
+            ...post,
+            createdDt: new Date(),
+            updatedDt: new Date()
+        };
+        this.blogModel.create(createPost);
+    }
+
+    // 게시글 조회
+    async getPost(id: String): Promise<PostDto> {
+        return await this.blogModel.findById(id).exec();
+    }
+
+    //게시글 삭제
+    async deletePost(id: String): Promise<void> {
+        await this.blogModel.findByIdAndDelete(id);
+    }
+
+    //게시글 업데이트
+    async updatePost(id: String, post: PostDto): Promise<void> {
+        const updatePost = {id, ...post, updatedDt: new Date()};
+        await this.blogModel.findByIdAndUpdate(id, updatePost);
+    }
 }

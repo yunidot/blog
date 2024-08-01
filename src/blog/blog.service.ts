@@ -2,11 +2,11 @@ import { PostDto } from './blog.model';
 import { Injectable } from '@nestjs/common';
 
 // 리포지토리 클래스, 인터페이스 임포트
-import { BlogFileRepository } from './blog.repository';
+import { BlogMongoRepository } from './blog.repository';
 
 @Injectable()
 export class BlogService {
-    constructor(private blogRepository: BlogFileRepository) {}
+    constructor(private blogRepository: BlogMongoRepository) {}
     
     // 모든 글 조회
     async getAllPosts() {
